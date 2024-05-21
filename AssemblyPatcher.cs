@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace EditorPatcher
+namespace NebbyEditorCecilPatcher
 {
     public class AssemblyPatcher
     {

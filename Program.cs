@@ -1,19 +1,23 @@
 ﻿using Mono.Cecil;
+using System.Diagnostics;
 
-namespace EditorPatcher
+namespace NebbyEditorCecilPatcher
 {
     internal class Program
     {
-        /*
-         * 0 = Path of assembly to patch
-         * 1 = Output path
-         * 2 = Path to directory with required game assemblies
-         * 3 = List of fields to patch.
-         */
+        internal static void Log(Exception e) => Log(e.ToString());
+        internal static void Log(string message)
+        {
+            Console.WriteLine(message);
+        }
 
         private static void Main(string[] args)
         {
-
+            if (!AssemblyPatcherArguments.TryParse(args, out var patcherArguments))
+            {
+                Log("AssemblyPatcherArguments parsing has failed...");
+                return;
+            }
         }
         /*static void Main(string[] args)
         {
