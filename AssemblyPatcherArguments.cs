@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace NebbyEditorCecilPatcher;
-public class AssemblyPatcherArguments
+internal class AssemblyPatcherArguments
 {
     public string AssemblyToPatchPath { get; private set; }
     public string AssemblyOutputPath { get; private set; }

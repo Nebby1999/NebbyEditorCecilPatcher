@@ -13,11 +13,23 @@ namespace NebbyEditorCecilPatcher
 
         private static void Main(string[] args)
         {
+            //Parse the arguments
             if (!AssemblyPatcherArguments.TryParse(args, out var patcherArguments))
             {
                 Log("AssemblyPatcherArguments parsing has failed...");
                 return;
             }
+
+            //Initialize a new patcher using said arguments.
+            var patcher = new AssemblyPatcher(patcherArguments);
+
+            if(!patcher.Patch())
+            {
+                Log("The AssemblyPatcher has thrown an exception, nothing will be written in the output.");
+                return;
+            }
+
+            Log("Finished!");
         }
         /*static void Main(string[] args)
         {
