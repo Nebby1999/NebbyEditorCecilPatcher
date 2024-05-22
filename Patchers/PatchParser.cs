@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Reflection.Metadata;
 
 namespace NebbyEditorCecilPatcher.Patchers
 {
@@ -51,9 +52,15 @@ namespace NebbyEditorCecilPatcher.Patchers
         {
             public string typeNameToPatch;
             public string memberName;
-            public string fieldTypeAssemblyName;
-            public string fieldTypeNamespaceName;
-            public string fieldTypeName;
+
+            public bool isArray;
+
+            public string? fieldTypeAssemblyName;
+            public string? fieldTypeNamespaceName;
+            public string? fieldTypeName;
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public PrimitiveTypeCode primitiveType;
 
             [JsonConverter(typeof(StringEnumConverter))]
             public FieldAttributes fieldAttributes;
