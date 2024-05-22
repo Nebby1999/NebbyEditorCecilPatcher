@@ -1,63 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mono.Cecil;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace NebbyEditorCecilPatcher.Patchers
 {
-    internal class PatchParser
+    public class PatchParser
     {
         public IPatcher[] Patchers { get; private set; }
-        private string[] _patcherStringRepresentations;
+        private string _pathToPatchesJSON;
 
-        public PatchParser(string[] patcherStringRepresentations)
+        public PatchParser(string pathToPatchesJSON)
         {
-            Patchers = new IPatcher[patcherStringRepresentations.Length];
-            _patcherStringRepresentations = patcherStringRepresentations;
+            _pathToPatchesJSON = pathToPatchesJSON;
         }
 
         public bool TryParse()
         {
-            int index = -1;
             try
             {
-                for(int i = 0; i < _patcherStringRepresentations.Length; i++)
+                string json = File.ReadAllText(_pathToPatchesJSON);
+                PatchesMetadata metadata = JsonConvert.DeserializeObject<PatchesMetadata>(json);
+
+                Patchers = new IPatcher[metadata.GetTotalPatchesCount()];
+                for(int i = 0; i < metadata.fieldPatches.Length; i++)
                 {
-                    index = i;
-                    Patchers[i] = Parse(_patcherStringRepresentations[i]);
+                    Patchers[i] = new FieldPatcher(metadata.fieldPatches[i]);
                 }
                 return true;
             }
             catch(Exception ex)
             {
-                Program.Log($"Failed to parse patcher at index {index}. {ex}");
-                return false;
+                Program.Log(ex);
             }
+            return false;
         }
 
-        private IPatcher Parse(string stringRepresentation)
+        [Serializable]
+        public class PatchesMetadata
         {
-            string[] allArguments = stringRepresentation.Split(',');
-            string[] patcherArguments = new ArraySegment<string>(allArguments, 1, allArguments.Length).ToArray();
-            string patcherType = allArguments[0];
-            switch(patcherType)
+            public FieldPatchMetadata[] fieldPatches;
+
+            public int GetTotalPatchesCount()
             {
-                case PatcherConstants.FIELD_PATCHER:
-                    return new FieldPatcher().ParsePatcherArguments(patcherArguments);
-                case PatcherConstants.METHOD_PATCHER:
-                    return new MethodPatcher().ParsePatcherArguments(patcherArguments);
-                case PatcherConstants.PROPERTY_PATCHER:
-                    return new PropertyPatcher().ParsePatcherArguments(patcherArguments);
+                return fieldPatches.Length;
             }
-            throw new ArgumentException($"patcherType string is set to an invalid value. Value={patcherType}");
         }
 
-        public static class PatcherConstants
+        [Serializable]
+        public class FieldPatchMetadata
         {
-            public const string FIELD_PATCHER = "patchType=FIELD";
-            public const string METHOD_PATCHER = "patchType=METHOD";
-            public const string PROPERTY_PATCHER = "patchType=PROPERTY";
+            public string typeNameToPatch;
+            public string memberName;
+            public string fieldTypeAssemblyName;
+            public string fieldTypeNamespaceName;
+            public string fieldTypeName;
+
+            [JsonConverter(typeof(StringEnumConverter))]
+            public FieldAttributes fieldAttributes;
         }
     }
 }

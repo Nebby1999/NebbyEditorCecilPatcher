@@ -7,73 +7,40 @@ using System.Threading.Tasks;
 
 namespace NebbyEditorCecilPatcher.Patchers;
 
-internal class FieldPatcher : IPatcher
+
+public class FieldPatcher : IPatcher
 {
-    public string TypeNameToPatch { get; private set; }
-    public string MemberName { get; private set; }
-    public string FieldTypeName { get; private set; }
-    public FieldAttributes FieldAttributes { get; private set; }
-    public void DoPatch(AssemblyDefinition assemblyDefinition, TypeDefinition[] typeDefinitions)
+    public string TypeNameToPatch { get; init; }
+    public string FieldName { get; init; }
+    public string FieldTypeAssemblyName { get; init; }
+    public string FieldTypeNamespaceName { get; init; }
+    public string FieldTypeName { get; init; }
+    public FieldAttributes FieldAttributes { get; init; }
+    public void DoPatch(AssemblyDefinition assemblyDefinition)
     {
-        foreach(var definition in typeDefinitions)
-        {
-            if (definition.FullName != TypeNameToPatch)
-                continue;
+        TypeDefinition typeToPatch = assemblyDefinition.MainModule.GetType(TypeNameToPatch);
 
-            definition.Fields.Add(new FieldDefinition(MemberName, FieldAttributes, GetFieldType(typeDefinitions)));
-        }
+        if (typeToPatch == null)
+            return;
+
+        FieldDefinition newField = new FieldDefinition(FieldName, FieldAttributes, FindTypeReference(assemblyDefinition));
+        typeToPatch.Fields.Add(newField);
     }
 
-    private TypeReference GetFieldType(TypeDefinition[] definitions)
+    private TypeReference FindTypeReference(AssemblyDefinition definition)
     {
-        foreach(var definition in definitions)
-        {
-            if(definition.FullName == FieldTypeName)
-            {
-                return definition;
-            }
-        }
-        return null;
+        var scope = definition.MainModule.AssemblyReferences.OrderByDescending(a => a.Version).FirstOrDefault(a => a.Name == FieldTypeAssemblyName);
+        var typeRef = new TypeReference(FieldTypeNamespaceName, FieldTypeName, definition.MainModule, scope);
+        return typeRef;
     }
 
-    public IPatcher ParsePatcherArguments(string[] arguments)
+    public FieldPatcher(PatchParser.FieldPatchMetadata metadata)
     {
-        TypeNameToPatch = arguments[0];
-        MemberName = arguments[1];
-        return this;
-    }
-}
-
-internal class PropertyPatcher : IPatcher
-{
-    public string TypeNameToPatch => throw new NotImplementedException();
-
-    public string MemberName => throw new NotImplementedException();
-
-    public void DoPatch(AssemblyDefinition assemblyDefinition, TypeDefinition[] typeDefinitions)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IPatcher ParsePatcherArguments(string[] arguments)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-internal class MethodPatcher : IPatcher
-{
-    public string TypeNameToPatch => throw new NotImplementedException();
-
-    public string MemberName => throw new NotImplementedException();
-
-    public void DoPatch(AssemblyDefinition assemblyDefinition, TypeDefinition[] typeDefinitions)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IPatcher ParsePatcherArguments(string[] arguments)
-    {
-        throw new NotImplementedException();
+        TypeNameToPatch = metadata.typeNameToPatch;
+        FieldName = metadata.memberName;
+        FieldTypeAssemblyName = metadata.fieldTypeAssemblyName;
+        FieldTypeNamespaceName = metadata.fieldTypeNamespaceName;
+        FieldTypeName = metadata.fieldTypeName;
+        FieldAttributes = metadata.fieldAttributes;
     }
 }

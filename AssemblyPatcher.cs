@@ -3,7 +3,7 @@ using NebbyEditorCecilPatcher.Patchers;
 
 namespace NebbyEditorCecilPatcher;
 
-internal class AssemblyPatcher
+public class AssemblyPatcher
 {
     public AssemblyPatcherArguments Arguments { get; private set; }
 
@@ -15,7 +15,7 @@ internal class AssemblyPatcher
         if (!SetupResolver())
             return false;
 
-        PatchParser parser = new PatchParser(Arguments.PatchArguments);
+        PatchParser parser = new PatchParser(Arguments.PathToPatchesJSON);
         if (!parser.TryParse())
             return false;
 
@@ -27,10 +27,9 @@ internal class AssemblyPatcher
             using var memoryStream = new MemoryStream(File.ReadAllBytes(Arguments.AssemblyToPatchPath));
             using var assemblyDefinition = AssemblyDefinition.ReadAssembly(memoryStream, _readerParameters);
 
-            var typeDefinitions = GetAllTypeDefinitions(assemblyDefinition);
             for(int i = 0; i < _patchers.Length; i++)
             {
-                _patchers[i].DoPatch(assemblyDefinition, typeDefinitions);
+                _patchers[i].DoPatch(assemblyDefinition);
             }
 
             // We write to a memory stream first to ensure that Mono.Cecil doesn't have any errors when producing the assembly.
@@ -47,7 +46,7 @@ internal class AssemblyPatcher
         }
         catch(Exception ex)
         {
-
+            Program.Log(ex);
         }
 
         return false;
@@ -75,24 +74,6 @@ internal class AssemblyPatcher
             Program.Log(ex);
         }
         return false;
-    }
-
-    private TypeDefinition[] GetAllTypeDefinitions(AssemblyDefinition assembly)
-    {
-        List<TypeDefinition> typeDefinitions = new List<TypeDefinition>();
-
-        var typeQueue = new Queue<TypeDefinition>(assembly.MainModule.Types);
-
-        while (typeQueue.Count > 0)
-        {
-            var type = typeQueue.Dequeue();
-
-            typeDefinitions.Add(type);
-
-            foreach (var nestedType in type.NestedTypes)
-                typeQueue.Enqueue(nestedType);
-        }
-        return typeDefinitions.ToArray();
     }
 
     public AssemblyPatcher(AssemblyPatcherArguments arguments)

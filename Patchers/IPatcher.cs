@@ -9,8 +9,5 @@ namespace NebbyEditorCecilPatcher.Patchers;
 
 public interface IPatcher
 {
-    string TypeNameToPatch { get; }
-    string MemberName { get; }
-    void DoPatch(AssemblyDefinition assemblyDefinition, TypeDefinition[] typeDefinitions);
-    IPatcher ParsePatcherArguments(string[] arguments);
+    void DoPatch(AssemblyDefinition assemblyDefinition);
 }

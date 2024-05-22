@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NebbyEditorCecilPatcher": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\RoR2Related\\Projects\\NebbyEditorCecilPatcher\\bin\\Release\\net7.0\\Test\\RoR2.dll\"\r\n\"D:\\RoR2Related\\Projects\\NebbyEditorCecilPatcher\\bin\\Release\\net7.0\\Test\\RoR2-Patched.dll\"\r\n\"D:\\RoR2Related\\Projects\\NebbyEditorCecilPatcher\\bin\\Release\\net7.0\\Test\"\r\n\"D:\\RoR2Related\\Projects\\NebbyEditorCecilPatcher\\bin\\Release\\net7.0\\JSONData.json\""
+    }
+  }
+}
